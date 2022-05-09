@@ -7,15 +7,23 @@ import (
 
 func Init() map[interface{}]interface{} {
 	s := make(map[interface{}]interface{})
-
 	s["hello"] = "world"
-	// fmt.Println("store: ", s)
-	// fmt.Println("store[\"hello\"]: ", s["hello"])
 	return s
 }
 
 func Get(w http.ResponseWriter, r *http.Request, s map[interface{}]interface{}) {
 	key := r.URL.Query().Get("key")
-	value := s[key]
-	fmt.Fprintf(w, "Value: %q\n", value)
+	value, hasKey := s[key]
+
+	switch hasKey {
+	case false:
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintf(w, "404 key not found")
+	default:
+		fmt.Fprintf(w, "%q", value)
+	}
+}
+
+func Put(w http.ResponseWriter, r *http.Request, s map[interface{}]interface{}) {
+
 }
