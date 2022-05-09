@@ -1,29 +1,18 @@
 package store
 
-import (
-	"fmt"
-	"net/http"
-)
-
 func Init() map[interface{}]interface{} {
 	s := make(map[interface{}]interface{})
 	s["hello"] = "world"
 	return s
 }
 
-func Get(w http.ResponseWriter, r *http.Request, s map[interface{}]interface{}) {
-	key := r.URL.Query().Get("key")
+func Get(key interface{}, s map[interface{}]interface{}) (interface{}, bool) {
+	// key := r.URL.Query().Get("key")
 	value, hasKey := s[key]
-
-	switch hasKey {
-	case false:
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(w, "404 key not found")
-	default:
-		fmt.Fprintf(w, "%q", value)
-	}
+	return value, hasKey
 }
 
-func Put(w http.ResponseWriter, r *http.Request, s map[interface{}]interface{}) {
-
+func Put(key interface{}, value interface{}, s map[interface{}]interface{}) bool {
+	s[key] = value
+	return true
 }
