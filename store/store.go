@@ -59,22 +59,21 @@ func (kvs Kvs) Delete(key interface{}) bool {
 	return false
 }
 
-func (kvs Kvs) List() ([]byte, error) {
+func (kvs Kvs) List() []listInfo {
+
 	var convertedStore []listInfo
-
-	fmt.Println(convertedStore)
-
 	for key, info := range kvs.Store {
 		stringifiedKey := fmt.Sprintf("%v", key)
+
 		infoStruct := listInfo{
 			Key:   stringifiedKey,
 			Owner: info.Owner,
 		}
+
 		convertedStore = append(convertedStore, infoStruct)
 	}
 
-	json, err := json.Marshal(convertedStore)
-	return json, err
+	return convertedStore
 }
 
 func (kvs Kvs) ListKey(key interface{}) ([]byte, error) {

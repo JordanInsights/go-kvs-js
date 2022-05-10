@@ -73,9 +73,6 @@ func delete(w http.ResponseWriter, r *http.Request, kvs store.Kvs) {
 }
 
 func list(w http.ResponseWriter, r *http.Request, kvs store.Kvs) {
-	list, success := kvs.List()
-
-	fmt.Println(success)
-
+	list := kvs.List()
 	json.NewEncoder(w).Encode(list)
 }
