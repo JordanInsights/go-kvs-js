@@ -7,13 +7,13 @@ import (
 	"net/http"
 )
 
-func put(w http.ResponseWriter, r *http.Request, s map[interface{}]interface{}) {
+func put(w http.ResponseWriter, r *http.Request, kvs store.Kvs) {
 
 	key, keyPresent := utils.ExtractParametricEndpoints(r.URL.Path)
 
 	if keyPresent {
 		value := r.URL.Query().Get("value")
-		valueStored := store.Put(key, value, s)
+		valueStored := kvs.Put(key, value)
 
 		switch valueStored {
 		case false:
@@ -31,11 +31,11 @@ func ping(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "pong")
 }
 
-func get(w http.ResponseWriter, r *http.Request, s map[interface{}]interface{}) {
+func get(w http.ResponseWriter, r *http.Request, kvs store.Kvs) {
 	key, keyPresent := utils.ExtractParametricEndpoints(r.URL.Path)
 
 	if keyPresent {
-		value, hasKey := store.Get(key, s)
+		value, hasKey := kvs.Get(key)
 		switch hasKey {
 		case false:
 			w.WriteHeader(http.StatusNotFound)
@@ -43,6 +43,26 @@ func get(w http.ResponseWriter, r *http.Request, s map[interface{}]interface{}) 
 			return
 		default:
 			fmt.Fprintf(w, "%q", value)
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusNotFound)
+	fmt.Fprintf(w, "404 key not found")
+}
+
+func delete(w http.ResponseWriter, r *http.Request, kvs store.Kvs) {
+	key, keyPresent := utils.ExtractParametricEndpoints(r.URL.Path)
+
+	if keyPresent {
+		success := kvs.Delete(key)
+		switch success {
+		case false:
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprintf(w, "404 key not found")
+			return
+		default:
+			fmt.Fprintf(w, "%q", "ok")
 			return
 		}
 	}

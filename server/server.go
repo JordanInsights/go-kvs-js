@@ -6,10 +6,10 @@ import (
 )
 
 func Init() {
-	s := store.Init()
+	kvs := store.Init()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		routes(w, r, s)
+		routes(w, r, kvs)
 	})
 
 	http.ListenAndServe(":8000", nil)

@@ -1,21 +1,24 @@
 package server
 
 import (
+	"go-kvs-js/store"
 	"net/http"
 	"regexp"
 )
 
 var pingPattern = regexp.MustCompile(`ping`)
-var putGetPattern = regexp.MustCompile(`store/?([a-zA-z0-9]+)/?`)
+var putGetDeletePattern = regexp.MustCompile(`store/?([a-zA-z0-9]+)/?`)
 
-func routes(w http.ResponseWriter, r *http.Request, s map[interface{}]interface{}) {
+func routes(w http.ResponseWriter, r *http.Request, kvs store.Kvs) {
 	path := r.URL.Path
 	switch {
 	case pingPattern.MatchString(path):
 		ping(w, r)
-	case putGetPattern.MatchString(path) && r.Method == http.MethodPut:
-		put(w, r, s)
-	case putGetPattern.MatchString(path) && r.Method == http.MethodGet:
-		get(w, r, s)
+	case putGetDeletePattern.MatchString(path) && r.Method == http.MethodPut:
+		put(w, r, kvs)
+	case putGetDeletePattern.MatchString(path) && r.Method == http.MethodGet:
+		get(w, r, kvs)
+	case putGetDeletePattern.MatchString(path) && r.Method == http.MethodDelete:
+		delete(w, r, kvs)
 	}
 }
