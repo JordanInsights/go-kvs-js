@@ -16,7 +16,6 @@ type Kvs struct {
 
 func Init() Kvs {
 	kvs := Kvs{make(map[interface{}]interface{})}
-	kvs.Put("hello", "world")
 	return kvs
 }
 
