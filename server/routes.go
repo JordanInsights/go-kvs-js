@@ -6,17 +6,16 @@ import (
 )
 
 var pingPattern = regexp.MustCompile(`ping`)
-var getPattern = regexp.MustCompile(`get`)
-var putPattern = regexp.MustCompile(`store/?([a-zA-z0-9]+)/?`)
+var putGetPattern = regexp.MustCompile(`store/?([a-zA-z0-9]+)/?`)
 
 func routes(w http.ResponseWriter, r *http.Request, s map[interface{}]interface{}) {
 	path := r.URL.Path
 	switch {
 	case pingPattern.MatchString(path):
 		ping(w, r)
-	case putPattern.MatchString(path):
+	case putGetPattern.MatchString(path) && r.Method == http.MethodPut:
 		put(w, r, s)
-	case getPattern.MatchString(path):
+	case putGetPattern.MatchString(path) && r.Method == http.MethodGet:
 		get(w, r, s)
 	}
 }

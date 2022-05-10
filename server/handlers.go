@@ -32,14 +32,21 @@ func ping(w http.ResponseWriter, r *http.Request) {
 }
 
 func get(w http.ResponseWriter, r *http.Request, s map[interface{}]interface{}) {
-	key := r.URL.Query().Get("key")
-	value, hasKey := store.Get(key, s)
+	key, keyPresent := utils.ExtractParametricEndpoints(r.URL.Path)
 
-	switch hasKey {
-	case false:
-		w.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(w, "404 key not found")
-	default:
-		fmt.Fprintf(w, "%q", value)
+	if keyPresent {
+		value, hasKey := store.Get(key, s)
+		switch hasKey {
+		case false:
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprintf(w, "404 key not found")
+			return
+		default:
+			fmt.Fprintf(w, "%q", value)
+			return
+		}
 	}
+
+	w.WriteHeader(http.StatusNotFound)
+	fmt.Fprintf(w, "404 key not found")
 }
