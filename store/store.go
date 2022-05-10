@@ -20,7 +20,6 @@ func Init() Kvs {
 }
 
 func (kvs Kvs) Get(key interface{}) (interface{}, bool) {
-	// key := r.URL.Query().Get("key")
 	value, hasKey := kvs.store[key]
 	return value, hasKey
 }
