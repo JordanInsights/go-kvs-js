@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"go-kvs-js/store"
 	"go-kvs-js/utils"
@@ -69,4 +70,12 @@ func delete(w http.ResponseWriter, r *http.Request, kvs store.Kvs) {
 
 	w.WriteHeader(http.StatusNotFound)
 	fmt.Fprintf(w, "404 key not found")
+}
+
+func list(w http.ResponseWriter, r *http.Request, kvs store.Kvs) {
+	list, success := kvs.List()
+
+	fmt.Println(success)
+
+	json.NewEncoder(w).Encode(list)
 }
