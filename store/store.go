@@ -1,8 +1,6 @@
 package store
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
 )
 
@@ -40,23 +38,33 @@ func (kvs Kvs) Get(key interface{}) (interface{}, bool) {
 	return value, hasKey
 }
 
-func (kvs Kvs) Put(key interface{}, value interface{}) bool {
+func (kvs Kvs) Put(key interface{}, value interface{}, user string) bool {
+	existingValue, exists := kvs.Store[key]
 	var newInfo = info{
 		Key:   key,
-		Owner: "Jordan",
+		Owner: user,
 		value: value,
 	}
+
+	if exists && existingValue.Owner != user {
+		return false
+	}
+
 	kvs.Store[key] = newInfo
 	return true
 }
 
-func (kvs Kvs) Delete(key interface{}) bool {
-	_, hasKey := kvs.Store[key]
-	if hasKey {
+func (kvs Kvs) Delete(key interface{}, user string) error {
+	value, hasKey := kvs.Store[key]
+
+	if hasKey && value.Owner == user {
 		delete(kvs.Store, key)
-		return true
+		return nil
+	} else if hasKey {
+		return StoreErrors["auth"]
 	}
-	return false
+
+	return StoreErrors["404"]
 }
 
 func (kvs Kvs) List() []listInfo {
@@ -76,23 +84,18 @@ func (kvs Kvs) List() []listInfo {
 	return convertedStore
 }
 
-func (kvs Kvs) ListKey(key interface{}) ([]byte, error) {
+func (kvs Kvs) ListKey(key interface{}) (listInfo, bool) {
 	keyInfo, hasKey := kvs.Store[key]
-	if hasKey {
-		type keyAndOwner struct {
-			Key   interface{}
-			Owner string
-		}
+	infoStruct := listInfo{}
 
-		returnVal := keyAndOwner{
-			Key:   key,
+	if hasKey {
+		stringifiedKey := fmt.Sprintf("%v", key)
+
+		infoStruct = listInfo{
+			Key:   stringifiedKey,
 			Owner: keyInfo.Owner,
 		}
-
-		json, err := json.Marshal(returnVal)
-		return json, err
 	}
 
-	placeholder, _ := json.Marshal("Error")
-	return placeholder, errors.New("Error")
+	return infoStruct, hasKey
 }

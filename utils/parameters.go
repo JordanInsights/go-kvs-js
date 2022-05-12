@@ -4,8 +4,8 @@ import (
 	"regexp"
 )
 
-func ExtractParametricEndpoints(url string) (string, bool) {
-	pattern := "store/?([a-zA-z0-9]+)/?"
+func ExtractParametricEndpoints(url string, prefix string) (string, bool) {
+	pattern := prefix + "/{1}([a-zA-z0-9]+)/?"
 	r, err := regexp.Compile(pattern)
 
 	if err == nil {
@@ -21,3 +21,7 @@ func ExtractParametricEndpoints(url string) (string, bool) {
 		return "error", false
 	}
 }
+
+// func BasicAuth(username string) string {
+// 	return base64.StdEncoding.EncodeToString([]byte(username))
+// }
