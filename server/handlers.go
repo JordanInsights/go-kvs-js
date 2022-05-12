@@ -7,6 +7,8 @@ import (
 	"go-kvs-js/utils"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"time"
 )
 
 func put(w http.ResponseWriter, r *http.Request, kvs store.Kvs, user string) {
@@ -101,4 +103,17 @@ func listKey(w http.ResponseWriter, r *http.Request, kvs store.Kvs) {
 
 	w.WriteHeader(http.StatusNotFound)
 	fmt.Fprintf(w, "404 key not found")
+}
+
+func shutdown(w http.ResponseWriter, r *http.Request, u string) {
+	if u != "admin" {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	go func() {
+		time.Sleep(time.Millisecond)
+		os.Exit(0)
+	}()
 }
