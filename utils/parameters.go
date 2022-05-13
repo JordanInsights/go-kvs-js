@@ -21,7 +21,3 @@ func ExtractParametricEndpoints(url string, prefix string) (string, bool) {
 		return "error", false
 	}
 }
-
-// func BasicAuth(username string) string {
-// 	return base64.StdEncoding.EncodeToString([]byte(username))
-// }
