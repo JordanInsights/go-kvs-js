@@ -4,13 +4,7 @@ import (
 	"fmt"
 )
 
-// make a type for the key value store
-// make the functions methods on the key value store struct
-
-// The concurrency will be occuring in the store,
-// this is where you need to worry about it
-
-type Kvs struct {
+type kvs struct {
 	Store map[interface{}]info
 }
 
@@ -23,15 +17,11 @@ type info struct {
 	Owner      string
 }
 
-// func Init() Kvs {
 func Init() {
-	// kvs := Kvs{make(map[interface{}]info)}
 	go monitorRequests()
-	return
-	// return kvs
 }
 
-func (kvs Kvs) Get(key interface{}) (interface{}, error) {
+func (kvs kvs) get(key interface{}) (interface{}, error) {
 	keyInfo, hasKey := kvs.Store[key]
 	switch hasKey {
 	case false:
@@ -42,7 +32,7 @@ func (kvs Kvs) Get(key interface{}) (interface{}, error) {
 	}
 }
 
-func (kvs Kvs) Put(key interface{}, value interface{}, user string) error {
+func (kvs kvs) put(key interface{}, value interface{}, user string) error {
 	existingValue, exists := kvs.Store[key]
 	var newInfo = info{
 		Key:   key,
@@ -58,7 +48,7 @@ func (kvs Kvs) Put(key interface{}, value interface{}, user string) error {
 	return nil
 }
 
-func (kvs Kvs) Delete(key interface{}, user string) error {
+func (kvs kvs) delete(key interface{}, user string) error {
 	value, hasKey := kvs.Store[key]
 
 	if hasKey && value.Owner == user {
@@ -71,7 +61,7 @@ func (kvs Kvs) Delete(key interface{}, user string) error {
 	return StoreErrors["404"]
 }
 
-func (kvs Kvs) List() []listInfo {
+func (kvs kvs) list() []listInfo {
 	var convertedStore []listInfo
 	for key, info := range kvs.Store {
 		stringifiedKey := fmt.Sprintf("%v", key)
@@ -87,7 +77,7 @@ func (kvs Kvs) List() []listInfo {
 	return convertedStore
 }
 
-func (kvs Kvs) ListKey(key interface{}) (listInfo, error) {
+func (kvs kvs) listKey(key interface{}) (listInfo, error) {
 	keyInfo, hasKey := kvs.Store[key]
 	infoStruct := listInfo{}
 

@@ -21,6 +21,7 @@ func put(w http.ResponseWriter, r *http.Request, user string) {
 		if valueErr != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, "no value")
+			return
 		}
 
 		stringifiedValue := string(value)
