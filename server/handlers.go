@@ -11,26 +11,27 @@ import (
 	"time"
 )
 
-func put(w http.ResponseWriter, r *http.Request, kvs store.Kvs, user string) {
-
+// func put(w http.ResponseWriter, r *http.Request, kvs store.Kvs, user string) {
+func put(w http.ResponseWriter, r *http.Request, user string) {
 	key, keyPresent := utils.ExtractParametricEndpoints(r.URL.Path, "store")
 
 	if keyPresent {
-		value, err := ioutil.ReadAll(r.Body)
+		value, valueErr := ioutil.ReadAll(r.Body)
 
-		if err != nil {
+		if valueErr != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, "no value")
 		}
 
 		stringifiedValue := string(value)
-		valueStored := kvs.Put(key, stringifiedValue, user)
 
-		switch valueStored {
-		case false:
+		_, err := store.AddRequest(user, key, r.Method, "Put", stringifiedValue)
+
+		switch err {
+		case store.StoreErrors["forbidden"]:
 			w.WriteHeader(http.StatusForbidden)
-		default:
-			fmt.Fprintf(w, "OK")
+		case nil:
+			fmt.Fprintf(w, "ok")
 		}
 	}
 }
@@ -40,21 +41,21 @@ func ping(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "pong")
 }
 
-func get(w http.ResponseWriter, r *http.Request, kvs store.Kvs) {
+// func get(w http.ResponseWriter, r *http.Request, kvs store.Kvs, user string) {
+func get(w http.ResponseWriter, r *http.Request, user string) {
 	key, keyPresent := utils.ExtractParametricEndpoints(r.URL.Path, "store")
 
 	if keyPresent {
-		value, hasKey := kvs.Get(key)
+		res, err := store.AddRequest(user, key, r.Method, "Get", nil)
 
-		switch hasKey {
-
-		case false:
+		switch err {
+		case nil:
+			resString := fmt.Sprint(res)
+			fmt.Fprint(w, resString)
+			return
+		case store.StoreErrors["404"]:
 			w.WriteHeader(http.StatusNotFound)
 			fmt.Fprintf(w, "404 key not found")
-			return
-		default:
-			resString := fmt.Sprint(value)
-			fmt.Fprintf(w, resString)
 			return
 		}
 	}
@@ -63,11 +64,13 @@ func get(w http.ResponseWriter, r *http.Request, kvs store.Kvs) {
 	fmt.Fprintf(w, "404 key not found")
 }
 
-func delete(w http.ResponseWriter, r *http.Request, kvs store.Kvs, user string) {
+// func delete(w http.ResponseWriter, r *http.Request, kvs store.Kvs, user string) {
+func delete(w http.ResponseWriter, r *http.Request, user string) {
 	key, keyPresent := utils.ExtractParametricEndpoints(r.URL.Path, "store")
 
 	if keyPresent {
-		err := kvs.Delete(key, user)
+		_, err := store.AddRequest(user, key, r.Method, "Delete", nil)
+
 		switch err {
 		case store.StoreErrors["404"]:
 			w.WriteHeader(http.StatusNotFound)
@@ -86,17 +89,25 @@ func delete(w http.ResponseWriter, r *http.Request, kvs store.Kvs, user string) 
 	fmt.Fprintf(w, "404 key not found")
 }
 
-func list(w http.ResponseWriter, r *http.Request, kvs store.Kvs) {
-	list := kvs.List()
-	json.NewEncoder(w).Encode(list)
+// func list(w http.ResponseWriter, r *http.Request, kvs store.Kvs) {
+func list(w http.ResponseWriter, r *http.Request) {
+	res, _ := store.AddRequest("", "", r.Method, "List", nil)
+	json.NewEncoder(w).Encode(res)
 }
 
-func listKey(w http.ResponseWriter, r *http.Request, kvs store.Kvs) {
+// func listKey(w http.ResponseWriter, r *http.Request, kvs store.Kvs) {
+func listKey(w http.ResponseWriter, r *http.Request) {
 	key, keyPresent := utils.ExtractParametricEndpoints(r.URL.Path, "list")
+
 	if keyPresent {
-		infoStruct, hasKey := kvs.ListKey(key)
-		if hasKey {
-			json.NewEncoder(w).Encode(infoStruct)
+		res, err := store.AddRequest("", key, r.Method, "ListKey", nil)
+
+		switch err {
+		case store.StoreErrors["404"]:
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprintf(w, "404 key not found")
+		default:
+			json.NewEncoder(w).Encode(res)
 			return
 		}
 	}

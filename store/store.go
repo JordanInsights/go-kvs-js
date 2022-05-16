@@ -10,10 +10,6 @@ import (
 // The concurrency will be occuring in the store,
 // this is where you need to worry about it
 
-type kvp struct {
-	key, value interface{}
-}
-
 type Kvs struct {
 	Store map[interface{}]info
 }
@@ -27,18 +23,26 @@ type info struct {
 	Owner      string
 }
 
-func Init() Kvs {
-	kvs := Kvs{make(map[interface{}]info)}
-	return kvs
+// func Init() Kvs {
+func Init() {
+	// kvs := Kvs{make(map[interface{}]info)}
+	go monitorRequests()
+	return
+	// return kvs
 }
 
-func (kvs Kvs) Get(key interface{}) (interface{}, bool) {
+func (kvs Kvs) Get(key interface{}) (interface{}, error) {
 	keyInfo, hasKey := kvs.Store[key]
-	value := keyInfo.value
-	return value, hasKey
+	switch hasKey {
+	case false:
+		return nil, StoreErrors["404"]
+	default:
+		value := keyInfo.value
+		return value, nil
+	}
 }
 
-func (kvs Kvs) Put(key interface{}, value interface{}, user string) bool {
+func (kvs Kvs) Put(key interface{}, value interface{}, user string) error {
 	existingValue, exists := kvs.Store[key]
 	var newInfo = info{
 		Key:   key,
@@ -47,11 +51,11 @@ func (kvs Kvs) Put(key interface{}, value interface{}, user string) bool {
 	}
 
 	if exists && existingValue.Owner != user {
-		return false
+		return StoreErrors["forbidden"]
 	}
 
 	kvs.Store[key] = newInfo
-	return true
+	return nil
 }
 
 func (kvs Kvs) Delete(key interface{}, user string) error {
@@ -68,7 +72,6 @@ func (kvs Kvs) Delete(key interface{}, user string) error {
 }
 
 func (kvs Kvs) List() []listInfo {
-
 	var convertedStore []listInfo
 	for key, info := range kvs.Store {
 		stringifiedKey := fmt.Sprintf("%v", key)
@@ -84,7 +87,7 @@ func (kvs Kvs) List() []listInfo {
 	return convertedStore
 }
 
-func (kvs Kvs) ListKey(key interface{}) (listInfo, bool) {
+func (kvs Kvs) ListKey(key interface{}) (listInfo, error) {
 	keyInfo, hasKey := kvs.Store[key]
 	infoStruct := listInfo{}
 
@@ -95,7 +98,9 @@ func (kvs Kvs) ListKey(key interface{}) (listInfo, bool) {
 			Key:   stringifiedKey,
 			Owner: keyInfo.Owner,
 		}
+		return infoStruct, nil
 	}
 
-	return infoStruct, hasKey
+	return infoStruct, StoreErrors["404"]
+
 }
