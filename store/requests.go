@@ -14,7 +14,7 @@ func monitorRequests() {
 	kvs := kvs{make(map[interface{}]info)}
 
 	for op := range requests {
-		go func() {
+		go func(op operation) {
 			switch op.storeMethod {
 			case "Get":
 				value, err := kvs.get(op.key)
@@ -37,7 +37,7 @@ func monitorRequests() {
 				op.responseChannel <- value
 				op.errorChannel <- nil
 			}
-		}()
+		}(op)
 	}
 }
 
