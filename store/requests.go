@@ -8,6 +8,7 @@ type operation struct {
 }
 
 var requests chan operation = make(chan operation)
+var done chan struct{} = make(chan struct{})
 
 func monitorRequests() {
 	// protected data
@@ -39,6 +40,8 @@ func monitorRequests() {
 			}
 		}(op)
 	}
+
+	close(done)
 }
 
 func AddRequest(authorization string, key string, httpMethod string, storeMethod string, value interface{}) (interface{}, error) {
@@ -57,4 +60,9 @@ func AddRequest(authorization string, key string, httpMethod string, storeMethod
 
 	requests <- op
 	return <-responseChannel, <-errorChannel
+}
+
+func StopRequests() {
+	close(requests)
+	<-done
 }

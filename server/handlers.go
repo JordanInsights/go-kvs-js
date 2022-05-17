@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"time"
 )
 
 // func put(w http.ResponseWriter, r *http.Request, kvs store.Kvs, user string) {
@@ -125,7 +124,7 @@ func shutdown(w http.ResponseWriter, r *http.Request, u string) {
 
 	w.WriteHeader(http.StatusOK)
 	go func() {
-		time.Sleep(time.Millisecond)
+		store.StopRequests()
 		os.Exit(0)
 	}()
 }
