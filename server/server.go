@@ -8,8 +8,9 @@ import (
 
 func Init() {
 	store.Init()
+	logs.Init()
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		logs.LogRequest(r.RemoteAddr, r.Method, r.URL.Path)
+		logs.RequestLogger.Println(r.RemoteAddr, r.Method, r.URL.Path)
 		routes(w, r)
 	})
 	http.ListenAndServe(":8000", nil)

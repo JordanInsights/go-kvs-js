@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"fmt"
+	"go-kvs-js/logs"
 	"go-kvs-js/store"
 	"go-kvs-js/utils"
 	"io/ioutil"
@@ -18,6 +19,7 @@ func put(w http.ResponseWriter, r *http.Request, user string) {
 		value, valueErr := ioutil.ReadAll(r.Body)
 
 		if valueErr != nil {
+			logs.ErrorLogger.Println(valueErr)
 			w.WriteHeader(http.StatusBadRequest)
 			fmt.Fprintf(w, "no value")
 			return
@@ -29,6 +31,7 @@ func put(w http.ResponseWriter, r *http.Request, user string) {
 
 		switch err {
 		case store.StoreErrors["forbidden"]:
+			logs.ErrorLogger.Println(err)
 			w.WriteHeader(http.StatusForbidden)
 		case nil:
 			fmt.Fprintf(w, "ok")
@@ -54,6 +57,7 @@ func get(w http.ResponseWriter, r *http.Request, user string) {
 			fmt.Fprint(w, resString)
 			return
 		case store.StoreErrors["404"]:
+			logs.ErrorLogger.Println(err)
 			w.WriteHeader(http.StatusNotFound)
 			fmt.Fprintf(w, "404 key not found")
 			return
@@ -73,10 +77,12 @@ func delete(w http.ResponseWriter, r *http.Request, user string) {
 
 		switch err {
 		case store.StoreErrors["404"]:
+			logs.ErrorLogger.Println(err)
 			w.WriteHeader(http.StatusNotFound)
 			fmt.Fprintf(w, "404 key not found")
 			return
 		case store.StoreErrors["auth"]:
+			logs.ErrorLogger.Println(err)
 			w.WriteHeader(http.StatusForbidden)
 			return
 		default:
@@ -104,6 +110,7 @@ func listKey(w http.ResponseWriter, r *http.Request) {
 
 		switch err {
 		case store.StoreErrors["404"]:
+			logs.ErrorLogger.Println(err)
 			w.WriteHeader(http.StatusNotFound)
 			fmt.Fprintf(w, "404 key not found")
 		default:
