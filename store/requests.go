@@ -56,6 +56,5 @@ func AddRequest(authorization string, key string, httpMethod string, storeMethod
 	}
 
 	requests <- op
-
 	return <-responseChannel, <-errorChannel
 }
