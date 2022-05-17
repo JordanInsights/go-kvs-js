@@ -7,11 +7,13 @@ import (
 )
 
 func Init() {
-	store.Init()
 	logs.Init()
+	store.Init()
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		logs.RequestLogger.Println(r.RemoteAddr, r.Method, r.URL.Path)
 		routes(w, r)
 	})
+
 	http.ListenAndServe(":8000", nil)
 }
